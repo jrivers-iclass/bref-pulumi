@@ -1,6 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
-import * as awsx from "@pulumi/awsx";
 import {PhpFpmFunction} from "../function/PhpFpmFunction";
 import {FunctionHttpApi} from "../api_gateway/FunctionApi";
 

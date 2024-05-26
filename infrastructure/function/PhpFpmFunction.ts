@@ -1,7 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
-import * as awsx from "@pulumi/awsx";
-import {ID, Lifted, Output, OutputInstance} from "@pulumi/pulumi";
+import {ID, Output} from "@pulumi/pulumi";
 import {FileArchive} from "@pulumi/pulumi/asset";
 
 const functionDefaults = {
@@ -54,6 +53,7 @@ export class PhpFpmFunction {
             role: this.roleArn,
             handler: this.handler,
             runtime: aws.lambda.Runtime.CustomAL2,
+            architectures: [architecture],
             environment: this.environment ? { variables: this.environment } : undefined,
             layers: [fpmLayerArn, ...(this.layers || [])],
             timeout: this.timeout,
