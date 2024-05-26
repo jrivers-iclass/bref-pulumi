@@ -1,7 +1,8 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
-import {ID, Output} from "@pulumi/pulumi";
+import {ID, Lifted, Output, OutputInstance} from "@pulumi/pulumi";
+import {FileArchive} from "@pulumi/pulumi/asset";
 
 const functionDefaults = {
     memorySize: 1024,
@@ -25,9 +26,15 @@ export class PhpFpmFunction {
     code: pulumi.asset.FileArchive
     lambda: aws.lambda.Function;
 
-    constructor(name: string, code: pulumi.asset.FileArchive,s3Bucket: Output<ID>, roleArn: Output<string>, handler: string, environment?: {
-        [p: string]: string
-    }, layers?: string[], timeout: number = 28, memorySize: number = functionDefaults.memorySize) {
+    constructor(name: string,
+                code: FileArchive,
+                s3Bucket: Output<ID>,
+                roleArn: Output<string>,
+                handler: string,
+                environment?: {},
+                layers?: string[],
+                timeout: number = 28,
+                memorySize: number = functionDefaults.memorySize) {
         this.name = name;
         this.s3Bucket = s3Bucket;
         this.roleArn = roleArn;

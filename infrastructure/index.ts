@@ -16,17 +16,24 @@ const lambdaRolePolicy = new aws.iam.RolePolicyAttachment("lambdaRolePolicy", {
     policyArn: aws.iam.ManagedPolicy.AWSLambdaBasicExecutionRole,
 });
 
+// Create an HTTP API
+const httpApi = new FunctionHttpApi("laravel-test");
+// Create a Lambda function
 const phpFpmFunction = new PhpFpmFunction(
     "laravel-test",
     new pulumi.asset.FileArchive("../laravel"),
     bucket.id,
     lambdaRole.arn,
-    "Bref\\LaravelBridge\\Http\\HttpHandler", {
+    "public\\index.php", {
         APP_KEY: "base64:G8tY4z7J6zCfFmQ5v",
+        APP_URL: pulumi.interpolate`${httpApi.apiUrl}`,
     });
+// Create lambda integration with the API Gateway
+httpApi.addIntegration(phpFpmFunction.lambda.arn);
+// Deploy the stage
+httpApi.deployStage(pulumi.getStack());
 
-// Create an HTTP API for the lambda function
-const httpApi = new FunctionHttpApi("laravel-test", phpFpmFunction.lambda.arn);
+
 
 // Export the URL of the API Gateway
 export const apiUrl = pulumi.interpolate`${httpApi.apiUrl}`;
