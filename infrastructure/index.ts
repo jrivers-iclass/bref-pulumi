@@ -1,6 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import {WebApp, ConsoleApp, LambdaRole, S3BucketPolicy} from "./constructs";
+import {SqsWorker} from "./constructs/SqsWorker";
 
 // Create an AWS resource (S3 Bucket)
 const bucket = new aws.s3.Bucket("bref-example-bucket");
@@ -30,6 +31,13 @@ const consoleApp = new ConsoleApp(
     environment
 );
 
+const sqsWorker = new SqsWorker(
+    "laravel-test-worker",
+    new pulumi.asset.FileArchive("../laravel"),
+    lambdaRole,
+    environment
+);
+
 
 // Export the URL of the API Gateway
 export const apiUrl = pulumi.interpolate`${webApp.httpApi.apiUrl}`;
@@ -41,3 +49,7 @@ export const lambdaName = webApp.phpFpmFunction.lambda.name;
 export const lambdaRoleArn = lambdaRole.lambdaRole.arn;
 // Export console Lambda function name
 export const consoleLambdaName = consoleApp.phpFpmFunction.lambda.name;
+// Export worker Lambda function name
+export const workerLambdaName = sqsWorker.phpFunction.lambda.name;
+// Export the queue URL
+export const queueUrl = sqsWorker.queue.url;
