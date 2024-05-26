@@ -3,34 +3,34 @@ import * as aws from "@pulumi/aws";
 import {WebApp} from "./constructs/WebApp";
 import {ConsoleApp} from "./constructs/ConsoleApp";
 import {LambdaRole} from "./constructs/LambdaRole";
+import {S3BucketPolicy} from "./constructs/S3BucketPolicy";
 
 // Create an AWS resource (S3 Bucket)
 const bucket = new aws.s3.Bucket("bref-example-bucket");
 
 // Create the Lambda Role
-const lambdaRole = new LambdaRole("lambdaRole", bucket);
+const lambdaRole = new LambdaRole("lambdaRole");
+lambdaRole.addPolicy("s3", new S3BucketPolicy(bucket).bucketPolicy);
+
+const environment = {
+    FILESYSTEM_DISK: "s3",
+    AWS_BUCKET: bucket.bucket,
+    DB_DATABASE: ":memory:",
+};
 
 // Create the WebApp
 const webApp = new WebApp(
     "laravel-test",
     new pulumi.asset.FileArchive("../laravel"),
     lambdaRole,
-    {
-        FILESYSTEM_DISK: "s3",
-        AWS_BUCKET: bucket.bucket,
-        DB_DATABASE: ":memory:",
-    }
+    environment
 );
 
 const consoleApp = new ConsoleApp(
     "laravel-test-artisan",
     new pulumi.asset.FileArchive("../laravel"),
     lambdaRole,
-    {
-        FILESYSTEM_DISK: "s3",
-        AWS_BUCKET: bucket.bucket,
-        DB_DATABASE: ":memory:",
-    }
+    environment
 );
 
 
