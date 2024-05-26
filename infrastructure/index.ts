@@ -21,7 +21,8 @@ const webApp = new WebApp(
     "laravel-test",
     new pulumi.asset.FileArchive("../laravel"),
     lambdaRole,
-    environment
+    {BREF_LOOP_MAX: 250, ...environment},
+    true
 );
 
 const consoleApp = new ConsoleApp(
@@ -44,7 +45,7 @@ export const apiUrl = pulumi.interpolate`${webApp.httpApi.apiUrl}`;
 // Export the name of the bucket
 export const bucketName = bucket.id;
 // Export the Lambda function name
-export const lambdaName = webApp.phpFpmFunction.lambda.name;
+export const lambdaName = webApp.phpFunction.lambda.name;
 // Export the Lambda Policy ARN
 export const lambdaRoleArn = lambdaRole.lambdaRole.arn;
 // Export console Lambda function name
@@ -53,3 +54,5 @@ export const consoleLambdaName = consoleApp.phpFpmFunction.lambda.name;
 export const workerLambdaName = sqsWorker.phpFunction.lambda.name;
 // Export the queue URL
 export const queueUrl = sqsWorker.queue.url;
+// Export octane flag
+export const useOctane = webApp.useOctane;
