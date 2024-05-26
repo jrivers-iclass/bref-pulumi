@@ -1,5 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
-import {PhpFpmFunction} from "../function/PhpFpmFunction";
+import {PhpFpmFunction} from "../function";
 import {FunctionHttpApi} from "../api_gateway/FunctionApi";
 import {LambdaRole} from "./LambdaRole";
 

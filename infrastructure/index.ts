@@ -1,9 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
-import {WebApp} from "./constructs/WebApp";
-import {ConsoleApp} from "./constructs/ConsoleApp";
-import {LambdaRole} from "./constructs/LambdaRole";
-import {S3BucketPolicy} from "./constructs/S3BucketPolicy";
+import {WebApp, ConsoleApp, LambdaRole, S3BucketPolicy} from "./constructs";
 
 // Create an AWS resource (S3 Bucket)
 const bucket = new aws.s3.Bucket("bref-example-bucket");
