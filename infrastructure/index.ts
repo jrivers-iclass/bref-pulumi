@@ -24,8 +24,7 @@ const phpFpmFunction = new PhpFpmFunction(
     new pulumi.asset.FileArchive("../laravel"),
     bucket.id,
     lambdaRole.arn,
-    "public\\index.php", {
-        APP_KEY: "base64:G8tY4z7J6zCfFmQ5v",
+    "public/index.php", {
         APP_URL: pulumi.interpolate`${httpApi.apiUrl}`,
     });
 // Create lambda integration with the API Gateway

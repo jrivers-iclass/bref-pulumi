@@ -49,7 +49,7 @@ export class FunctionHttpApi {
         // Create a new stage for the API
         return new aws.apigatewayv2.Stage(`${this.name}-${stageName}`, {
             apiId: this.api.id,
-            name: stageName,
+            name: "$default",
             autoDeploy: true,
         });
     }
