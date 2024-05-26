@@ -9,11 +9,15 @@ const functionDefaults = {
     architecture: "x86_64"
 };
 
-function fpmLayer(phpVersion: string) {
-    return `arn:aws:lambda:us-east-1:534081306603:layer:php-${phpVersion}-fpm:68`;
+function phpLayer(phpVersion: string) {
+    return `arn:aws:lambda:us-east-1:534081306603:layer:php-${phpVersion}:68`;
 }
 
-export class PhpFpmFunction {
+function consoleLayer() {
+    return `arn:aws:lambda:us-east-1:534081306603:layer:console:78`;
+}
+
+export class PhpConsoleFunction {
     name: string;
     roleArn: Output<string>;
     handler: string;
@@ -43,7 +47,8 @@ export class PhpFpmFunction {
 
         const phpVersion = functionDefaults.phpVersion;
         const architecture = functionDefaults.architecture;
-        const fpmLayerArn = fpmLayer(phpVersion.replace(".", ""));
+        const phpLayerArn = phpLayer(phpVersion.replace(".", ""));
+        const consoleLayerArn = consoleLayer();
 
         this.lambda = new aws.lambda.Function(this.name, {
             code: this.code,
@@ -52,7 +57,7 @@ export class PhpFpmFunction {
             runtime: aws.lambda.Runtime.CustomAL2,
             architectures: [architecture],
             environment: this.environment ? { variables: this.environment } : undefined,
-            layers: [fpmLayerArn, ...(this.layers || [])],
+            layers: [phpLayerArn, consoleLayerArn, ...(this.layers || [])],
             timeout: this.timeout,
             memorySize: this.memorySize
         });
