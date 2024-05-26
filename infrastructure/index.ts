@@ -63,7 +63,7 @@ const lambdaPermission = new aws.lambda.Permission("apiGatewayInvokePermission",
 });
 
 // Export the URL of the API Gateway
-export const apiUrl = pulumi.interpolate`${httpApi.apiEndpoint}/prod`;
+export const apiUrl = pulumi.interpolate`${httpApi.apiEndpoint}`;
 // Export the name of the bucket
 export const bucketName = bucket.id;
 // Export the Lambda function name
