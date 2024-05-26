@@ -16,35 +16,34 @@ function fpmLayer(phpVersion: string) {
 export class PhpFpmFunction {
     name: string;
     s3Bucket: Output<ID>;
-    s3Key: string;
     roleArn: Output<string>;
     handler: string;
     environment?: { [key: string]: string };
     layers?: string[];
     timeout: number;
     memorySize: number;
+    code: pulumi.asset.FileArchive
+    lambda: aws.lambda.Function;
 
-    constructor(name: string, s3Bucket: Output<ID>, s3Key: string, roleArn: Output<string>, handler: string, environment?: {
+    constructor(name: string, code: pulumi.asset.FileArchive,s3Bucket: Output<ID>, roleArn: Output<string>, handler: string, environment?: {
         [p: string]: string
     }, layers?: string[], timeout: number = 28, memorySize: number = functionDefaults.memorySize) {
         this.name = name;
         this.s3Bucket = s3Bucket;
-        this.s3Key = s3Key;
         this.roleArn = roleArn;
         this.handler = handler;
         this.environment = environment;
         this.layers = layers;
         this.timeout = timeout;
         this.memorySize = memorySize;
-    }
+        this.code = code;
 
-    create() {
         const phpVersion = functionDefaults.phpVersion;
         const architecture = functionDefaults.architecture;
         const fpmLayerArn = fpmLayer(phpVersion.replace(".", ""));
 
-        return new aws.lambda.Function(this.name, {
-            code: new pulumi.asset.FileArchive(`../laravel`),
+        this.lambda = new aws.lambda.Function(this.name, {
+            code: this.code,
             role: this.roleArn,
             handler: this.handler,
             runtime: aws.lambda.Runtime.CustomAL2,
