@@ -7,9 +7,11 @@ export class PhpOctaneFunction extends Function {
                 code: FileArchive,
                 roleArn: Output<string>,
                 environment?: {},
+                subnetIds?: string[],
+                securityGroupIds?: string[],
                 layers?: string[],
                 timeout: number = 28,
                 memorySize: number = functionDefaults.memorySize) {
-        super(name, code, roleArn, "Bref\\LaravelBridge\\Http\\OctaneHandler", environment, functionDefaults.phpVersion, ["php"], layers, timeout, memorySize);
+        super(name, code, roleArn, "Bref\\LaravelBridge\\Http\\OctaneHandler", environment, functionDefaults.phpVersion, ["php"], layers, timeout, memorySize, subnetIds, securityGroupIds);
     }
 }

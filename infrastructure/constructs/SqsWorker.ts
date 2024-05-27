@@ -17,6 +17,8 @@ export class SqsWorker {
         code: pulumi.asset.FileArchive,
         lambdaRole: LambdaRole,
         environment: {},
+        subnetIds?: string[],
+        securityGroupIds?: string[],
         batchSize: number = 1,
         visibilityTimeoutSeconds: number = 30,
         messageRetentionSeconds: number = 86400,
@@ -46,6 +48,11 @@ export class SqsWorker {
             environment,
             "8.2",
             ["php"],
+            undefined,
+            undefined,
+            undefined,
+            subnetIds,
+            securityGroupIds
         );
 
         new aws.lambda.EventSourceMapping("eventSourceMapping", {

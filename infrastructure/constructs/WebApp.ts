@@ -10,7 +10,14 @@ export class WebApp {
     public readonly name: string;
     public readonly useOctane: boolean;
 
-    constructor(name: string, code: pulumi.asset.FileArchive, lambdaRole: LambdaRole, environment: {}, useOctane: boolean = false)
+    constructor(
+        name: string,
+        code: pulumi.asset.FileArchive,
+        lambdaRole: LambdaRole,
+        environment: {},
+        useOctane: boolean = false,
+        subnetIds?: string[],
+        securityGroupIds?: string[])
     {
         this.name = name;
         this.useOctane = useOctane;
@@ -25,14 +32,19 @@ export class WebApp {
                 this.name,
                 code,
                 lambdaRole.lambdaRole.arn,
-                environment);
+                environment,
+                subnetIds,
+                securityGroupIds
+                );
         } else {
             this.phpFunction = new PhpFpmFunction(
                 this.name,
                 code,
                 lambdaRole.lambdaRole.arn,
                 "public/index.php",
-                environment);
+                environment,
+                subnetIds,
+                securityGroupIds);
         }
 
 

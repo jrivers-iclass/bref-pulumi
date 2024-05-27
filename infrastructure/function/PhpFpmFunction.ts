@@ -8,9 +8,11 @@ export class PhpFpmFunction extends Function {
                 roleArn: Output<string>,
                 handler: string,
                 environment?: {},
+                subnetIds?: string[],
+                securityGroupIds?: string[],
                 layers?: string[],
                 timeout: number = 28,
                 memorySize: number = functionDefaults.memorySize) {
-        super(name, code, roleArn, handler, environment, functionDefaults.phpVersion, ["fpm"], layers, timeout, memorySize);
+        super(name, code, roleArn, handler, environment, functionDefaults.phpVersion, ["fpm"], layers, timeout, memorySize, subnetIds, securityGroupIds);
     }
 }

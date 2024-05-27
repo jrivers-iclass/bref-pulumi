@@ -1,6 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
-import {PhpFpmFunction} from "../function/PhpFpmFunction";
-import {PhpConsoleFunction} from "../function/PhpConsoleFunction";
+import {PhpFpmFunction} from "../function";
+import {PhpConsoleFunction} from "../function";
 import {LambdaRole} from "./LambdaRole";
 
 export class ConsoleApp {
@@ -8,7 +8,13 @@ export class ConsoleApp {
     public readonly name: string;
     public readonly lambdaRole: LambdaRole;
 
-    constructor(name: string, code: pulumi.asset.FileArchive , lambdaRole: LambdaRole, environment: {}) {
+    constructor(
+        name: string,
+        code: pulumi.asset.FileArchive ,
+        lambdaRole: LambdaRole,
+        environment: {},
+        subnetIds?: string[],
+        securityGroupIds?: string[]) {
         this.name = name;
         this.lambdaRole = lambdaRole;
 
@@ -18,7 +24,9 @@ export class ConsoleApp {
             code,
             this.lambdaRole.lambdaRole.arn,
             "artisan",
-            environment
+            environment,
+            subnetIds,
+            securityGroupIds
         );
     }
 }

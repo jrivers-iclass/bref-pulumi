@@ -17,9 +17,11 @@ export class Function {
     layers?: string[];
     timeout: number;
     memorySize: number;
-    code: pulumi.asset.FileArchive
+    code: pulumi.asset.FileArchive;
     lambda: aws.lambda.Function;
-    brefLayers: {}
+    brefLayers: {};
+    subnetIds: string[];
+    securityGroupIds: string[];
 
     constructor(name: string,
                 code: FileArchive,
@@ -30,7 +32,10 @@ export class Function {
                 brefLayers: string[] = [],
                 layers?: string[],
                 timeout: number = 28,
-                memorySize: number = functionDefaults.memorySize) {
+                memorySize: number = functionDefaults.memorySize,
+                subnetIds: string[] = [],
+                securityGroupIds: string[] = [])
+    {
         this.name = name;
         this.roleArn = roleArn;
         this.handler = handler;
@@ -39,6 +44,8 @@ export class Function {
         this.timeout = timeout;
         this.memorySize = memorySize;
         this.code = code;
+        this.subnetIds = [];
+        this.securityGroupIds = [];
         const architecture = functionDefaults.architecture;
         this.brefLayers = {
             php: this.phpLayer(phpVersion),
@@ -59,17 +66,26 @@ export class Function {
             this.layers.push(this.brefLayers[layerKey]);
         }
 
-        this.lambda = new aws.lambda.Function(this.name, {
-            code: this.code,
-            role: this.roleArn,
-            handler: this.handler,
+        const lambdaConfig: aws.lambda.FunctionArgs = {
+            code: code,
+            role: roleArn,
+            handler: handler,
             runtime: aws.lambda.Runtime.CustomAL2,
             architectures: [architecture],
-            environment: this.environment ? { variables: this.environment } : undefined,
+            environment: { variables: environment },
             layers: [...(this.layers || [])],
-            timeout: this.timeout,
-            memorySize: this.memorySize
-        });
+            timeout: timeout,
+            memorySize: memorySize,
+        };
+
+        if (subnetIds && subnetIds.length > 0 && securityGroupIds && securityGroupIds.length > 0) {
+            lambdaConfig.vpcConfig = {
+                subnetIds: subnetIds,
+                securityGroupIds: securityGroupIds,
+            };
+        }
+
+        this.lambda = new aws.lambda.Function(this.name, lambdaConfig);
     }
 
     private phpLayer(phpVersion: string) {
