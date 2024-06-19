@@ -6,7 +6,10 @@ import {SimpleVpc} from "./vpc/SimpleVpc";
 import {AuroraSecurityGroup} from "./vpc/AuroraSecurityGroup";
 import {AuroraServerless} from "./constructs/AuroraServerless";
 import {VpcPolicy} from "./constructs/VpcPolicy";
-import { readFileSync } from "fs";
+import {readFileSync} from "fs";
+
+// Create a new config object
+const config = new pulumi.Config();
 
 // Create a VPC
 const vpc = new SimpleVpc(
@@ -16,11 +19,41 @@ const vpc = new SimpleVpc(
     true,
     2,
     "10.0.0.0/16");
+
 const securityGroup = new AuroraSecurityGroup(
     "lambda-test-aurora-security-group", vpc);
-// Create an Aurora Serverless v2 cluster
-const auroraCluster = new AuroraServerless(
-    "laravel-test-aurora", vpc, securityGroup);
+
+const lambdaVpcConfig = pulumi.all([vpc.vpc.publicSubnetIds, securityGroup.securityGroup.id]).apply(([subnetIds, securityGroupId]) => ({
+    subnetIds: subnetIds,
+    securityGroupIds: [securityGroupId],
+}))
+
+var auroraCluster: AuroraServerless | null = null;
+var credentials: any = null;
+if (config.getBoolean("useMySQL")) {
+    // Create an Aurora Serverless v2 cluster
+    auroraCluster = new AuroraServerless(
+        "laravel-test-aurora", vpc, securityGroup);
+
+    const auroraSecret = auroraCluster.secretArn.apply(secretArn =>
+        aws.secretsmanager.getSecretVersion({
+            secretId: secretArn,
+        })
+    );
+
+    // Extract the username and password from the secret's JSON value
+    credentials = auroraSecret.apply(secret=> {
+        if (!secret.secretString) {
+            throw new Error("Secret string is empty");
+        }
+        const secretJson = JSON.parse(secret.secretString);
+        return {
+            username: secretJson.username,
+            password: secretJson.password,
+        };
+    });
+}
+
 // Create an AWS resource (S3 Bucket)
 const bucket = new aws.s3.Bucket("bref-example-bucket");
 
@@ -29,53 +62,30 @@ const lambdaRole = new LambdaRole("lambdaRole");
 lambdaRole.addPolicy("s3", new S3BucketPolicy(bucket).bucketPolicy);
 lambdaRole.addPolicy("vpc", new VpcPolicy().vpcPolicy);
 
-const auroraSecret = auroraCluster.secretArn.apply(secretArn =>
-    aws.secretsmanager.getSecretVersion({
-        secretId: secretArn,
-    })
-);
-
-// Extract the username and password from the secret's JSON value
-const credentials = auroraSecret.apply(secret => {
-    if (!secret.secretString) {
-        throw new Error("Secret string is empty");
-    }
-    const secretJson = JSON.parse(secret.secretString);
-    return {
-        username: secretJson.username,
-        password: secretJson.password,
-    };
-});
-
-const lambdaVpcConfig = pulumi.all([vpc.vpc.publicSubnetIds, securityGroup.securityGroup.id]).apply(([subnetIds, securityGroupId]) => ({
-    subnetIds: subnetIds,
-    securityGroupIds: [securityGroupId],
-}))
-
 
 const environment = {
     FILESYSTEM_DISK: "s3",
     AWS_BUCKET: bucket.bucket,
     DB_DATABASE: "laravelTest",
     DB_CONNECTION: "mysql",
-    DB_HOST: auroraCluster.endpoint,
+    DB_HOST: auroraCluster ? auroraCluster.endpoint : "",
     DB_PORT: "3306",
-    DB_USERNAME: credentials.username,
-    DB_PASSWORD: credentials.password,
+    DB_USERNAME: credentials? credentials.username: "",
+    DB_PASSWORD: credentials? credentials.password: "",
 };
 
 // Create the WebApp
-const webApp = lambdaVpcConfig.apply( vpcConfig =>new WebApp(
+const webApp = lambdaVpcConfig.apply(vpcConfig => new WebApp(
     "laravel-test",
     new pulumi.asset.FileArchive("../laravel"),
     lambdaRole,
     {BREF_LOOP_MAX: 250, ...environment},
-    true,
+    config.getBoolean("useOctane"),
     vpcConfig.subnetIds,
     vpcConfig.securityGroupIds
 ));
 
-const consoleApp = lambdaVpcConfig.apply( vpcConfig => new ConsoleApp(
+const consoleApp = lambdaVpcConfig.apply(vpcConfig => new ConsoleApp(
     "laravel-test-artisan",
     new pulumi.asset.FileArchive("../laravel"),
     lambdaRole,
@@ -84,7 +94,7 @@ const consoleApp = lambdaVpcConfig.apply( vpcConfig => new ConsoleApp(
     vpcConfig.securityGroupIds
 ));
 
-const sqsWorker = lambdaVpcConfig.apply( vpcConfig => new SqsWorker(
+const sqsWorker = lambdaVpcConfig.apply(vpcConfig => new SqsWorker(
     "laravel-test-worker",
     new pulumi.asset.FileArchive("../laravel"),
     lambdaRole,
@@ -111,6 +121,6 @@ export const queueUrl = sqsWorker.queue.url;
 // Export octane flag
 export const useOctane = webApp.useOctane;
 export const vpcId = vpc.vpc.vpcId;
-export const auroraClusterId = auroraCluster.auroraCluster.id;
-export const auroraClusterEndpoint = auroraCluster.endpoint;
+export const auroraClusterId = auroraCluster?.auroraCluster.id ?? "";
+export const auroraClusterEndpoint = auroraCluster?.endpoint ?? "";
 export const readme = readFileSync("./Pulumi.README.md").toString();

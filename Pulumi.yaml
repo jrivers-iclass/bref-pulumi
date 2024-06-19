@@ -8,6 +8,14 @@ template:
     aws:region:
       description: The AWS region to deploy into
       default: us-east-1
+    useOctane:
+      description: Use Octane instead of FPM
+      type: boolean
+      default: true
+    useMySQL:
+      description: Use MySQL
+      type: boolean
+      default: true
 config:
   pulumi:tags:
     value:
