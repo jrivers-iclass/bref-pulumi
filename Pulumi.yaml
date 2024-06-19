@@ -16,6 +16,16 @@ template:
       description: Use MySQL
       type: boolean
       default: true
+    useVPC:
+      description: Use a VPC (Required for MySQL)
+      type: boolean
+      default: true
+    servingLayer:
+      description: The serving layer to use
+      type: array
+      default: api
+      items:
+        - ApiGateway
 config:
   pulumi:tags:
     value:
