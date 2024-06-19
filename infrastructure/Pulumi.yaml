@@ -1,7 +1,0 @@
-name: bref
-runtime: nodejs
-description: A minimal Bref stack
-config:
-  pulumi:tags:
-    value:
-      pulumi:template: aws-typescript

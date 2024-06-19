@@ -6,6 +6,7 @@ import {SimpleVpc} from "./vpc/SimpleVpc";
 import {AuroraSecurityGroup} from "./vpc/AuroraSecurityGroup";
 import {AuroraServerless} from "./constructs/AuroraServerless";
 import {VpcPolicy} from "./constructs/VpcPolicy";
+import { readFileSync } from "fs";
 
 // Create a VPC
 const vpc = new SimpleVpc(
@@ -112,3 +113,4 @@ export const useOctane = webApp.useOctane;
 export const vpcId = vpc.vpc.vpcId;
 export const auroraClusterId = auroraCluster.auroraCluster.id;
 export const auroraClusterEndpoint = auroraCluster.endpoint;
+export const readme = readFileSync("./Pulumi.README.md").toString();
