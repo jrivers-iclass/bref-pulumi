@@ -19,6 +19,7 @@ export class SqsWorker {
         environment: {},
         subnetIds?: string[],
         securityGroupIds?: string[],
+        allowedPolicies: string[] = ['sqs:SendMessage', 'sqs:ReceiveMessage', 'sqs:DeleteMessage', 'sqs:GetQueueAttributes', 'sqs:GetQueueUrl'],
         batchSize: number = 1,
         visibilityTimeoutSeconds: number = 30,
         messageRetentionSeconds: number = 86400,
