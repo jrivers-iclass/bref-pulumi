@@ -55,11 +55,11 @@ export class SqsWorker {
             securityGroupIds
         );
 
-        new aws.lambda.EventSourceMapping("eventSourceMapping", {
-            eventSourceArn: this.queue.arn,
-            functionName: this.phpFunction.lambda.arn,
-            batchSize: this.batchSize,
-        });
+            new aws.lambda.EventSourceMapping(`${name}-esm`, {
+                eventSourceArn: this.queue.arn,
+                functionName: this.phpFunction.lambda.arn,
+                batchSize: this.batchSize,
+            });
 
         lambdaRole.addPolicy(`${name}-queue-policy`, new aws.iam.Policy(`${name}-queue-policy`, {
             policy: this.queue.arn.apply(arn => JSON.stringify({
