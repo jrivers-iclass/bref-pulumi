@@ -76,6 +76,25 @@ export class SqsWorker {
                 }],
             })),
         }));
+            // Allow the lamba role to use the queue with the specific actions
+            new aws.sqs.QueuePolicy(`${name}-queue-policy`, {
+                queueUrl: this.queue.url,
+                policy: pulumi.all([this.queue.arn, lambdaRole.lambdaRole.arn]).apply(([queueArn, lambdaRoleArn]) =>
+                    JSON.stringify({
+                        Version: '2012-10-17',
+                        Statement: [
+                            {
+                                Effect: 'Allow',
+                                Principal: {
+                                    AWS: lambdaRoleArn,
+                                },
+                                Action: allowedPolicies,
+                                Resource: queueArn,
+                            },
+                        ],
+                    }),
+                ),
+            });
         }
     }
 }
