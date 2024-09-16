@@ -26,7 +26,7 @@ export class WebApp {
         this.httpApi = new FunctionHttpApi("laravel-test");
 
         // Create APP_URL env if it isnt passed in
-        if (!environment['APP_URL']) {
+        if (!environment.hasOwnProperty('APP_URL')) {
             environment['APP_URL'] = pulumi.interpolate`https://${this.httpApi.apiUrl}`;
         }
 
