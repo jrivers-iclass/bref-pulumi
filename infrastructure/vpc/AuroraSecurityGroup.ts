@@ -11,6 +11,7 @@ export class AuroraSecurityGroup {
 
         // Ingress rule
         const allowAuroraAccess = new aws.vpc.SecurityGroupIngressRule('allow-aurora-access', {
+            description: 'Allow access to Aurora',
             securityGroupId: this.securityGroup.id,
             ipProtocol: 'tcp',
             cidrIpv4: '10.0.0.0/16',
@@ -20,6 +21,7 @@ export class AuroraSecurityGroup {
 
         // Egress rule
         const allowAllOutbound = new aws.vpc.SecurityGroupEgressRule('allow-all-outbound', {
+            description: 'Allow all outbound traffic',
             securityGroupId: this.securityGroup.id,
             ipProtocol: '-1',
             cidrIpv4: '0.0.0.0/0',
