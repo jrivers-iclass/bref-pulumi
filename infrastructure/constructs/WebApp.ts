@@ -14,7 +14,7 @@ export class WebApp {
         name: string,
         code: pulumi.asset.FileArchive,
         lambdaRole: LambdaRole,
-        environment: {},
+        environment: Record<string, any>,
         useOctane: boolean = false,
         subnetIds?: string[],
         securityGroupIds?: string[])
@@ -25,6 +25,10 @@ export class WebApp {
         // Create an HTTP API
         this.httpApi = new FunctionHttpApi("laravel-test");
 
+        // Create APP_URL env if it isnt passed in
+        if (!environment.hasOwnProperty('APP_URL')) {
+            environment.APP_URL = this.httpApi.apiUrl;
+        }
 
         // Create a Lambda function
         if (this.useOctane) {
