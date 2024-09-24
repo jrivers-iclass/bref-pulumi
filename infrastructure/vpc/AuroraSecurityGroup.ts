@@ -14,7 +14,7 @@ export class AuroraSecurityGroup {
             description: 'Allow access to Aurora',
             securityGroupId: this.securityGroup.id,
             ipProtocol: 'tcp',
-            cidrIpv4: '10.0.0.0/16',
+            cidrIpv4: vpc.vpc.vpc.cidrBlock,
             fromPort: 3306,
             toPort: 3306,
         });
