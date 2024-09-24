@@ -25,8 +25,6 @@ export class AuroraSecurityGroup {
             securityGroupId: this.securityGroup.id,
             ipProtocol: '-1',
             cidrIpv4: '0.0.0.0/0',
-            fromPort: 0,
-            toPort: 0,
         });
     }
 }
