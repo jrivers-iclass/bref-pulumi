@@ -3,24 +3,40 @@ description: ${DESCRIPTION}
 runtime: nodejs
 main: infrastructure/index.ts
 template:
-  description: A minimal Bref stack
-  config:
-    aws:region:
-      description: The AWS region to deploy into
-      default: us-east-1
-    useOctane:
-      description: Use Octane instead of FPM
-      type: boolean
-      default: true
-    useMySQL:
-      description: Use MySQL
-      type: boolean
-      default: true
-    useVPC:
-      description: Use a VPC (Required for MySQL)
-      type: boolean
-      default: true
+    description: A minimal Bref stack
+    config:
+        aws:region:
+            description: The AWS region to deploy into
+            default: us-east-1
+        useOctane:
+            description: Use Octane instead of FPM
+            type: boolean
+            default: true
+        useMySQL:
+            description: Use MySQL
+            type: boolean
+            default: true
+        useVPC:
+            description: Use a VPC (Required for MySQL)
+            type: boolean
+            default: true
+        useApiWarmer:
+            description: Use the API Warmer
+            type: boolean
+            default: true
+        apiWarmRate:
+            description: The rate at which the API Warmer should run
+            type: string
+            default: rate(5 minutes)
+        useArtisanScheduler:
+            description: Use the Artisan Scheduler
+            type: boolean
+            default: true
+        artisanScheduleRate:
+            description: The rate at which the Artisan Scheduler should run
+            type: string
+            default: rate(1 minute)
 config:
-  pulumi:tags:
-    value:
-      pulumi:template: bref-stack
+    pulumi:tags:
+        value:
+            pulumi:template: bref-stack
