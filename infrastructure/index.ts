@@ -159,7 +159,7 @@ if (config.getBoolean("useArtisanScheduler")) {
     const artisanSchedulerTarget = new aws.cloudwatch.EventTarget(`artisan-scheduler-target-${stackName}`, {
         rule: artisanScheduler.name,
         arn: consoleApp.phpFpmFunction.lambda.arn,
-        input: "'schedule:run'",
+        input: '"schedule:run"',
     });
 
     // Give permission to Eventbridge to invoke the lambda
