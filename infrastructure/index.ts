@@ -118,6 +118,59 @@ const sqsWorker = lambdaVpcConfig.apply(vpcConfig => new SqsWorker(
     vpcConfig.securityGroupIds
 ));
 
+// Enable the API Warmer
+if (config.getBoolean("useApiWarmer")) {
+    const apiWarmRate = config.get('apiWarmRate') || 'rate(5 minutes)';
+
+    // Create the eventbridge rule
+    const apiWarmScheduler = new aws.cloudwatch.EventRule(`api-warmer-${stackName}`, {
+        description: 'Schedule for keeping api warm',
+        scheduleExpression: apiWarmRate,
+    });
+
+    // Create the target for the api warmer
+    const artisanSchedulerTarget = new aws.cloudwatch.EventTarget(`api-warmer-target-${stackName}`, {
+        rule: apiWarmScheduler.name,
+        arn: webApp.phpFunction.lambda.arn,
+        input: JSON.stringify({
+            warmer: true,
+        }),
+    });
+
+    // Give permission to Eventbridge to invoke the lambda
+    const apiWarmSchedulerPermission = new aws.lambda.Permission(`api-warmer-permission-${stackName}`, {
+        action: 'lambda:InvokeFunction',
+        function: webApp.phpFunction.lambda.name,
+        principal: 'events.amazonaws.com',
+        sourceArn: apiWarmScheduler.arn,
+    });
+}
+
+if (config.getBoolean("useArtisanScheduler")) {
+    const scheduleRate = config.get('artisanScheduleRate') || 'rate(1 minute)';
+
+    // Create the eventbridge rule
+    const artisanScheduler = new aws.cloudwatch.EventRule(`artisan-scheduler-${stackName}`, {
+        description: 'Schedule for running artisan commands',
+        scheduleExpression: scheduleRate,
+    });
+
+    // Create the target for the artisan scheduler
+    const artisanSchedulerTarget = new aws.cloudwatch.EventTarget(`artisan-scheduler-target-${stackName}`, {
+        rule: artisanScheduler.name,
+        arn: consoleApp.phpFpmFunction.lambda.arn,
+        input: '"schedule:run"',
+    });
+
+    // Give permission to Eventbridge to invoke the lambda
+    const artisanSchedulerPermission = new aws.lambda.Permission(`artisan-scheduler-permission-${stackName}`, {
+        action: 'lambda:InvokeFunction',
+        function: consoleApp.phpFpmFunction.lambda.name,
+        principal: 'events.amazonaws.com',
+        sourceArn: artisanScheduler.arn,
+    });
+}
+
 
 // Export the URL of the API Gateway
 export const apiUrl = pulumi.interpolate`${webApp.httpApi.apiUrl}`;
